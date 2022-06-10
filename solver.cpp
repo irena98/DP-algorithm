@@ -5,6 +5,8 @@
 Solver::Solver(std::istream &stream) {
     std::string buffer;
 
+    std::cout << "Uneti formulu u DIMACS CNF formatu:" << std::endl;
+
     do {
         stream >> buffer;
         if(buffer == "c")

@@ -1,0 +1,76 @@
+\documentclass[a4paper,titlepage,12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[OT2]{fontenc}
+\usepackage[serbianc, serbian]{babel}
+
+\title{Implementacija $DP$ procedure za iskaznu logiku}
+\author{Irena Vasiljevic1, 1018/2021}
+\date{jun 2022.}
+
+\begin{document}
+
+\maketitle
+
+\section{Opis algoritma}
+
+$DP$ procedura je algoritam za ispitivanje zadovoljivosti formule iskazne logike, zasnovan na rezoluciji. Procedura ima svojstvo zaustavljanja, potpunosti i saglasnosti. Sushtinski korak algoritma je eliminacija promenljive, koji je zasnovan na pravilu rezolucije. Pored toga, postupak ukljuchuje i naredne operacije:
+\begin{itemize}
+	\item propagacija jedinichnih klauza ($unit$ $propagation$);
+	\item eliminacija chistih literala ($pure$ $literal$ $elimination$).
+\end{itemize}
+Takodje, vazhan deo procedure je korak eliminacije tautologichnih klauza, na pochetku procedure i nakon svake iteracije. Ulaz u algoritam je skup klauza, a na izlazu su moguc1a dva scenarija:
+\begin{itemize}
+	\item dobija se prazan skup klauza (u tom sluchaju algoritam prijavljuje zadovoljivost);
+	\item dobija se prazna klauza (u tom sluchaju algoritam prijavljuje nezadovoljivost).
+\end{itemize}
+
+\section{Opis implementacije}
+
+Procedura je implementirana u programskom jeziku $C$$+$$+$ i sushtinski prati naredni pseudokod:\\
+
+\newpage
+
+\noindent \textbf{Ulaz}: skup klauza $S$\\
+\textbf{Izlaz}: istinitosna vrednost koja odgovara svojstvu zadovoljivosti\\
+
+\noindent $repeat:$\\
+\indent $//unit$ $propagation:$\\
+\indent $while$ $S$ sadrzhi jedinichnu klauzu $\{l\}$:\\
+\indent \indent obrishi $\{l\}$ iz $S$\\
+\indent \indent za svaku klauzu $c$ u $S$ koja sadrzhi $-l$:\\
+\indent \indent \indent obrishi $-l$ iz $c$\\
+\indent $//tautology$ $elimination:$\\
+\indent za svaku klauzu $c$ u $S$ koja sadrzhi literal $l$ i njegovu negaciju $-l$:\\
+\indent \indent obrishi $c$ iz $S$\\
+\indent $//pure$ $literal$ $elimination:$\\
+\indent $while$ $S$ sadrzhi chist literal $l$:\\
+\indent \indent za svaku klauzu $c$ u $S$ koja sadrzhi $l$:\\
+\indent \indent \indent obrishi $c$ iz $S$\\
+\indent $//stopping$ $conditions:$\\
+\indent $if$ $S$ je prazan:\\
+\indent \indent $return$ $true$\\
+\indent $if$ $S$ sadrzhi praznu klauzu:\\
+\indent \indent $return$ $false$\\
+\indent $//variable$ $elimination:$\\
+\indent izaberi literal $l$ koji se pojavljuje u oba polariteta u $S$\\
+\indent \indent za svaku klauzu $c$ iz $S$ koja sadrzhi $l$ i\\
+\indent \indent svaku klauzu $d$ iz $S$ koja sadrzhi $-l$:\\
+\indent \indent \indent $//resolve:$\\
+\indent \indent \indent dodaj klauzu $(c \backslash \{l\}) \cup (d \backslash \{-l\})$ u $S$\\
+\indent \indent za svaku klauzu $c$ iz $S$ koja sadrzhi $l$ ili $-l$:\\
+\indent \indent \indent obrishi $c$ iz $S$
+
+\section{Prevodjenje i pokretanje}
+
+Program se prevodi sa: $g$$+$$+$ $-o$ $solve$ $main.cpp$ $solver.cpp$, a pokrec1e se sa: $./solve$. Program na ulazu ochekuje formulu u $DIMACS$ $CNF$ formatu. Na izlazu programa bic1e ispisano $SAT$ ukoliko je formula zadovoljiva, a $UNSAT$ ukoliko nije.
+
+\subsection{$DIMACS$ $CNF$ format}
+
+$DIMACS CNF$ format je tekstualna reprezentacija formule u kon\-juktivnoj normalnoj formi. Linije koje pochinju sa $c$ se smatraju komentarima. Reprezentacija formule pochinje linijom $p$ $cnf$ $broj\_promenljivih$ $broj\_klauza$. Nakon toga, predstavljaju se klauze formule. Svaka klauza se zadaje nizom celih brojeva, koji predstavljaju literale, i zavrshava se sa $0$. Na primer, formula $(x \vee \neg y) \wedge (x \vee y \vee \neg z)$ bi imala narednu reprezentaciju:\\
+
+$p$ $cnf$ $3$ $2$\\
+\indent $1$ $-2$ $0$\\
+\indent $1$ $2$ $-3$ $0$
+
+\end{document}
