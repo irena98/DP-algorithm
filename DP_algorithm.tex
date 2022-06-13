@@ -37,7 +37,8 @@ Procedura je implementirana u programskom jeziku $C$$+$$+$ i sushtinski prati na
 \noindent $repeat:$\\
 \indent $//unit$ $propagation:$\\
 \indent $while$ $S$ sadrzhi jedinichnu klauzu $\{l\}$:\\
-\indent \indent obrishi $\{l\}$ iz $S$\\
+\indent \indent za svaku klauzu $c$ u $S$ koja sadrzhi $l$:\\
+\indent \indent \indent obrishi $c$ iz $S$\\
 \indent \indent za svaku klauzu $c$ u $S$ koja sadrzhi $-l$:\\
 \indent \indent \indent obrishi $-l$ iz $c$\\
 \indent $//tautology$ $elimination:$\\

@@ -1,6 +1,7 @@
 #include "solver.h"
 
 #include <algorithm>
+#include <unordered_map>
 
 Solver::Solver(std::istream &stream) {
     std::string buffer;
@@ -52,15 +53,15 @@ Literal Solver::unit_clause() {
 }
 
 void Solver::unit_propagation(Literal literal) {
-    std::vector<Literal> tmp(1, literal);
-    formula.erase(std::find(formula.begin(), formula.end(), tmp));
+    delete_clauses(literal);
 
     for(int i = 0; i < formula.size(); i++) {
         int n = formula[i].size();
 
         for(int j = 0; j < n; j++)
             if(formula[i][j] == -literal) {
-                formula[i].erase(formula[i].begin() + j);
+                formula[i][j] = formula[i].back();
+                formula[i].pop_back();
                 n--;
                 j--;
             }
@@ -68,20 +69,19 @@ void Solver::unit_propagation(Literal literal) {
 }
 
 bool Solver::tautology(Clause &clause) {
-    Literal literal;
+    std::unordered_map<Literal, bool> literals = {};
 
-    for(literal = 1; literal <= varCount; literal++) {
-        bool p = false, n = false;
-
-        for(auto &l : clause) {
-            if(l == literal)
-                p = true;
-            if(l == -literal)
-                n = true;
+    for(auto &literal: clause) {
+        if(literal > 0) {
+            if(literals.find(literal) != literals.end() && literals[literal] == false)
+                return true;
+            literals[literal] = true;
         }
-
-        if(p && n)
-            return true;
+        else {
+            if(literals.find(-literal) != literals.end() && literals[-literal] == true)
+                return true;
+            literals[-literal] = false;
+        }
     }
 
     return false;
@@ -92,7 +92,8 @@ void Solver::delete_tautology() {
 
     for(int i = 0; i < n; i++) {
         if(tautology(formula[i])) {
-            formula.erase(formula.begin() + i);
+            formula[i] = formula.back();
+            formula.pop_back();
             n--;
             i--;
         }
@@ -135,7 +136,8 @@ void Solver::delete_clauses(Literal literal) {
 
     for(int i = 0; i < n; i++) {
         if(std::find(formula[i].begin(), formula[i].end(), literal) != formula[i].end()) {
-            formula.erase(formula.begin() + i);
+            formula[i] = formula.back();
+            formula.pop_back();
             n--;
             i--;
         }
@@ -178,7 +180,8 @@ void Solver::delete_duplicates(Clause &clause) {
     for(int i = 0; i < n; i++) {
         for(int j = i + 1; j < n; j++)
             if(clause[i] == clause[j]) {
-                clause.erase(clause.begin() + j);
+                clause[j] = clause.back();
+                clause.pop_back();
                 j--;
                 n--;
             }
@@ -187,10 +190,22 @@ void Solver::delete_duplicates(Clause &clause) {
 
 void Solver::resolve(Clause &clause1, Clause &clause2, Literal literal) {
     Clause resolvent(clause1);
+
+    for(int i = 0; i < resolvent.size(); i++)
+        if(resolvent[i] == literal) {
+            resolvent[i] = resolvent.back();
+            resolvent.pop_back();
+            break;
+        }
     
-    resolvent.erase(std::find(resolvent.begin(), resolvent.end(), literal));
     resolvent.insert(resolvent.end(), clause2.begin(), clause2.end());
-    resolvent.erase(std::find(resolvent.begin(), resolvent.end(), -literal));
+
+    for(int i = 0; i < resolvent.size(); i++)
+        if(resolvent[i] == -literal) {
+            resolvent[i] = resolvent.back();
+            resolvent.pop_back();
+            break;
+        }
 
     delete_duplicates(resolvent);
 
